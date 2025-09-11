@@ -4,28 +4,40 @@ import numpy as np
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import streamlit as st
+import os
 
-filename = "ue_horta.csv"
-# Load the CSV file into a pandas DataFrame
-df = pd.read_csv(filename)
+# Streamlit team selection
+team_options = {
+    "UE Horta": "ue_horta.csv",
+    "CBF Cerdanyola": "cerdanyola.csv",
+    "CB Prat": "prat.csv",
+    "Sant Just": "sant_just.csv",
+    "Manresa CBF": "manresa.csv"
+}
+selected_team = st.sidebar.selectbox("Selecciona l'equip", list(team_options.keys()), index=0)
+filename = team_options[selected_team]
 
+# Load the CSV file for the selected team
+if os.path.exists(filename):
+    df = pd.read_csv(filename)
+    df.columns = ["Jugadora", "Jornada","Rival","PTS","MIN","FC","FTM","FTA","2PM","3PM"]
+    player_stats_sum = df.groupby("Jugadora").sum()
+    player_stats_sum = player_stats_sum.drop(columns=["Jornada", "Rival"])
+    player_stats_sum = player_stats_sum.sort_values(by="MIN", ascending=False)
+    player_stats_sum["3PAr"] = player_stats_sum["3PM"] / (player_stats_sum["2PM"] + player_stats_sum["3PM"]) * 100
+    player_stats_sum["3PAr"] = player_stats_sum["3PAr"].round(1)
+    player_stats_sum["PTS/40MIN"] = player_stats_sum["PTS"] / player_stats_sum["MIN"]*40
+    player_stats_sum["PTS/40MIN"] = player_stats_sum["PTS/40MIN"].round(1)
+    games_played = df.groupby("Jugadora")["Jornada"].count()
+    player_stats_sum["PARTITS"] = games_played
+    player_stats_sum["PTS/PARTIT"] = player_stats_sum["PTS"] / games_played
+    player_stats_sum["PTS/PARTIT"] = player_stats_sum["PTS/PARTIT"].round(1)
+    player_stats_sum["MIN/PARTIT"] = player_stats_sum["MIN"] / games_played
+    player_stats_sum["MIN/PARTIT"] = player_stats_sum["MIN/PARTIT"].round(1)
 
-df.columns = ["Jugadora", "Jornada","Rival","PTS","MIN","FC","FTM","FTA","2PM","3PM"]
-# Display the first few rows
-
-specific_player = df[df["Jugadora"] == "Martina Ferran"]
-
-
-player_stats_sum = df.groupby("Jugadora").sum()
-player_stats_sum = player_stats_sum.drop(columns=["Jornada", "Rival"])
-
-player_stats_sum = player_stats_sum.sort_values(by="MIN", ascending=False)
-
-# Add 3PAR column
-player_stats_sum["3PAr"] = player_stats_sum["3PM"] / (player_stats_sum["2PM"] + player_stats_sum["3PM"]) * 100
-
-# Optional: round to 2 decimal places
-player_stats_sum["3PAr"] = player_stats_sum["3PAr"].round(1)
+else:
+    st.error(f"No s'ha trobat l'arxiu per l'equip {selected_team}: {filename}")
+    st.stop()
 
 ####### Streamlit app ########
 
@@ -53,6 +65,10 @@ if section == "Gràfic de dispersió":
 elif section == "Taula de valors":
     st.header("Taula de valors")
     df_plot = player_stats_sum.reset_index()
+    # Reorder columns
+    first_cols = ["Jugadora","PARTITS", "PTS", "MIN", "PTS/PARTIT", "MIN/PARTIT","PTS/40MIN"]
+    other_cols = [col for col in df_plot.columns if col not in first_cols]
+    df_plot = df_plot[first_cols + other_cols]
     fig, ax = plt.subplots(figsize=(12, len(df_plot)*0.5))
     ax.axis('tight')
     ax.axis('off')
@@ -79,11 +95,13 @@ elif section == "Taula de valors":
                      loc='center')
 
     table.auto_set_font_size(False)
-    table.set_fontsize(16)
-    table.scale(1,3.5)
+    table.set_fontsize(24)
+    table.scale(1,8)
     # Set first column width larger
     first_col = 0
     for key, cell in table.get_celld().items():
         if key[1] == first_col:
-            cell.set_width(0.3)  # Increase width (default is ~0.1)
+            cell.set_width(0.35)  # Increase width (default is ~0.1)
+        else:
+            cell.set_width(0.25)
     st.pyplot(fig)
