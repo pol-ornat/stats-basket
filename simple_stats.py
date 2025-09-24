@@ -8,7 +8,7 @@ import streamlit as st
 import os
 import sys
 sys.path.append('mapa_calor_py')
-from heat_map_shots import plot_heat_map_shots
+from mapa_calor_py.heat_map_shots import plot_heat_map_shots
 
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
