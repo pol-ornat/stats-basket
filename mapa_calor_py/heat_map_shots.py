@@ -5,7 +5,7 @@ import numpy as np
 from scipy.ndimage import gaussian_filter
 import matplotlib.cm as cm
 from matplotlib.patches import Arc
-from shooting_functions import *
+from .shooting_functions import *
 
 ##################################################################################
 def plot_heat_map_shots(filename, mapa_calor):
@@ -299,5 +299,6 @@ def plot_heat_map_shots(filename, mapa_calor):
     plt.show()
 
     return fig
+
 
 
