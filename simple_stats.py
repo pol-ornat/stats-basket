@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import os
 import sys
-sys.path.append('mapa_calor_py')
 from mapa_calor_py.heat_map_shots import plot_heat_map_shots
 
 if "authenticated" not in st.session_state:
@@ -26,7 +25,7 @@ team_options = {
     "UE Horta": "equips_primera/ue_horta.csv",
     "CBF Cerdanyola": "cerdanyola.csv",
     "CB Prat": "prat.csv",
-    "Sant Just": "sant_just.csv",
+    "Sant Just": "equips_primera/sant_just.csv",
     "Manresa CBF": "manresa.csv"
 }
 selected_team = st.sidebar.selectbox("Selecciona l'equip", list(team_options.keys()), index=0)
@@ -51,7 +50,7 @@ if os.path.exists(filename):
     # 3PT stats
     player_stats_sum["3P%"] = (player_stats_sum["3PM"] / player_stats_sum["3PA"]) * 100
     player_stats_sum["3P%"] = player_stats_sum["3P%"].round(1)
-    player_stats_sum["3PAr"] = player_stats_sum["3PM"] / (player_stats_sum["2PM"] + player_stats_sum["3PM"]) * 100
+    player_stats_sum["3PAr"] = player_stats_sum["3PA"] / (player_stats_sum["2PA"] + player_stats_sum["3PA"]) * 100
     player_stats_sum["3PAr"] = player_stats_sum["3PAr"].round(1)
 
     player_stats_sum["FG%"] = (player_stats_sum["FGM"] / player_stats_sum["FGA"]) * 100
